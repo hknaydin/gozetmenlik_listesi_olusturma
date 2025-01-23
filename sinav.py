@@ -3,13 +3,13 @@ import re
 from datetime import datetime, date
 
 import pandas as pd
-import sys
+#import sys # This import is not needed anymore
+#from importlib import reload # This import is not needed anymore
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+#reload(sys) # This line is not needed anymore
+#sys.setdefaultencoding('utf-8') # This line is not needed anymore and causing the error
 # Dosyayı okur ve bir dataframe'e dönüştürür.
-df = pd.read_excel('sinav_programi.xlsx')
-
+df = pd.read_excel('/content/data/sinav_programi_ek2.xlsx', engine='openpyxl') # Use 'openpyxl' for .xlsx files or 'xlrd' for .xls files
 
 def format_date(date_str):
     if date_str == "ara sınav yok" or date_str == "sınav yok":
@@ -21,7 +21,7 @@ def format_date(date_str):
             try:
                 tarih = datetime.strptime(date_str, '%d.%m.%Y').date()
             except ValueError:
-                tarih = None
+                tarih = datetime.max.date()  # Eğer tarih okunamazsa, max değeri döndür.
 
         return tarih
 # Sınıfı tanımlar.
@@ -73,8 +73,10 @@ for sinav in sinavlar_sirali:
     print("-" * 50)
 # Sıralanmış sınavları Excel dosyasına yazar.
 df_sirali = pd.DataFrame(columns=['Sınıf', 'Sınav Adı', 'Ders Kodu', 'Öğretim Üyesi', 'Tarih', 'Saat', 'Yer'])
+
+all_sinavlar = []
 for sinav in sinavlar_sirali:
-    df_sirali = df_sirali.append({
+    all_sinavlar.append({
         'Sınıf': sinav.sinif,
         'Sınav Adı': sinav.sinav_adi,
         'Ders Kodu': sinav.ders_kodu,
@@ -82,7 +84,10 @@ for sinav in sinavlar_sirali:
         'Tarih': format_date(sinav.tarih),
         'Saat': sinav.saat,
         'Yer': sinav.yer
-    }, ignore_index=True)
+    })
+
+# Create the DataFrame from the list of dictionaries
+df_sirali = pd.DataFrame(all_sinavlar)
 
 # Sonuçları yeni bir Excel dosyasına yaz.
-df_sirali.to_excel('sinav_programi_sirali.xlsx', index=False)
+df_sirali.to_excel('sinav_programi_ek2_sirali.xlsx', index=False)
